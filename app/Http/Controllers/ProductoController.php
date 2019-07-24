@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use App\Producto;
 
@@ -117,5 +118,37 @@ class ProductoController extends Controller
         $producto = Producto::findOrFail($id);
         $producto->delete();
         return $producto;
+    }
+
+    public function cargarProductosConImagenes()
+    {
+
+        $client = new Client(['base_uri' => 'http://localhost/prueba_daryl_ospina_api/public/api/']);
+        $response = $client->request('GET', 'producto');
+        $content = $response->getBody()->getContents();
+
+        $productos = json_decode($content, true);
+
+        for ($i = 0; $i < count($productos); ++$i){
+            $response = $client->request('GET', 'etiqueta/'.$productos[$i]['etiqueta_id']);
+            $content = $response->getBody()->getContents();
+            $productos[$i]['etiqueta_id'] = json_decode($content);
+
+            $response = $client->request('GET', 'imagen');
+            $content = $response->getBody()->getContents();
+
+            $imagenes = json_decode($content, true);
+            $arrayImagenes = array();
+
+            for ($j = 0; $j < count($imagenes); $j++){
+                if ($imagenes[$j]["producto_id"] == $productos[$i]["id"]){
+                    $arrayImagenes[] = $imagenes[$j];
+                }
+            }
+
+            $productos[$i]["imagenes"] = $arrayImagenes;
+        }
+
+        return view('about', compact('productos'));
     }
 }

@@ -11,6 +11,12 @@
 |
 */
 
+use \Illuminate\Support\Facades\Route;
+
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::view('/endpoints', 'endpoints')->name('endpoints');
+
+Route::get('/about', 'ProductoController@cargarProductosConImagenes')->name('about');
